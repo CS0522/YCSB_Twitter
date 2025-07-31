@@ -43,4 +43,7 @@ maxscanlength=100
 
 scanlengthdistribution=uniform
 
-
+measurementtype=hdrhistogram
+# p95, p99
+hdrhistogram.percentiles=95,99
+exportfile=/users/CS0522/outputs/default.log

@@ -82,8 +82,8 @@ public class CassandraCQLClient extends DB {
   private static AtomicReference<PreparedStatement> deleteStmt =
       new AtomicReference<PreparedStatement>();
 
-  private static ConsistencyLevel readConsistencyLevel = ConsistencyLevel.QUORUM;
-  private static ConsistencyLevel writeConsistencyLevel = ConsistencyLevel.QUORUM;
+  private static ConsistencyLevel readConsistencyLevel = ConsistencyLevel.ONE;
+  private static ConsistencyLevel writeConsistencyLevel = ConsistencyLevel.ALL;
 
   public static final String YCSB_KEY = "y_id";
   public static final String KEYSPACE_PROPERTY = "cassandra.keyspace";
