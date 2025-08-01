@@ -1,0 +1,16 @@
+tracefile=/home/frank/workspace/test/cluster024.txt
+recordcount=10000
+operationcount=10000
+workload=site.ycsb.workloads.CoreWorkload
+
+readallfields=true
+
+fieldcount=1
+# fieldlength=1000
+
+readproportion=0.5
+updateproportion=0.5
+scanproportion=0
+insertproportion=0
+
+requestdistribution=uniform

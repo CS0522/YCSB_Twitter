@@ -369,6 +369,25 @@ public class CoreWorkload extends Workload {
   protected int insertionRetryLimit;
   protected int insertionRetryInterval;
 
+  /// Twitter Cache-trace Support
+  public static final String TWITTER_TRACE_PROPERTY = "tracefile";
+  public static final String TWITTER_TRACE_DEFAULT = "";
+  protected String twittertracefile;
+
+  public boolean isTwitterWorkload() {
+    return (twittertracefile != TWITTER_TRACE_DEFAULT);
+  }
+
+  public String getTwitterTraceFile() {
+    return twittertracefile;
+  }
+
+  public List<String> getFieldNames() {
+    return fieldnames;
+  }
+
+  // Twitter Cache-trace Support
+
   private Measurements measurements = Measurements.getMeasurements();
 
   public static String buildKeyName(long keynum, int zeropadding, boolean orderedinserts) {
@@ -421,6 +440,10 @@ public class CoreWorkload extends Workload {
   @Override
   public void init(Properties p) throws WorkloadException {
     table = p.getProperty(TABLENAME_PROPERTY, TABLENAME_PROPERTY_DEFAULT);
+
+    /// Twitter Cache-trace Support
+    twittertracefile = p.getProperty(TWITTER_TRACE_PROPERTY, TWITTER_TRACE_DEFAULT);
+    /// Twitter Cache-trace Support
 
     fieldcount =
         Long.parseLong(p.getProperty(FIELD_COUNT_PROPERTY, FIELD_COUNT_PROPERTY_DEFAULT));

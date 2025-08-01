@@ -224,6 +224,12 @@ LICENSE file.
       <artifactId>rocksdb-binding</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- keystats db binding -->
+    <dependency>
+      <groupId>site.ycsb</groupId>
+      <artifactId>keystatsdb-binding</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>site.ycsb</groupId>
       <artifactId>s3-binding</artifactId>

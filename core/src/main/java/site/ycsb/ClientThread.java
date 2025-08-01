@@ -18,10 +18,13 @@
 package site.ycsb;
 
 import site.ycsb.measurements.Measurements;
-import java.util.Properties;
+import site.ycsb.workloads.CoreWorkload;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.LockSupport;
+import java.io.FileInputStream;
+import java.util.*;
 
 /**
  * A thread for executing transactions or data inserts to the database.
@@ -85,6 +88,42 @@ public class ClientThread implements Runnable {
     return opsdone;
   }
 
+  /// Twitter Cache-trace Support
+  public void replayTwitterTrace(String line, Random rand) {
+    // parse each line
+    String[] request = line.split(",");
+    String key = request[1];
+    // int keysize = Integer.parseInt(request[2]);
+    int valuesize = Integer.parseInt(request[3]);
+    String operation = request[5];
+
+    // 写入操作
+    if (operation.equals("set") || !dotransactions) {
+      byte[] bytes = new byte[valuesize];
+      HashMap<String, ByteIterator> values = new HashMap<>();
+
+      for (String fieldkey : ((CoreWorkload)workload).getFieldNames()) {
+        ByteIterator data;
+        // fill with random data
+        // 生成随机 Value 字符串
+        rand.nextBytes(bytes);
+        String val = new String(bytes);
+        data = new StringByteIterator(val);
+        values.put(fieldkey, data);
+      }
+      // 插入操作
+      ((DBWrapper)db).insert("usertable", key, values);
+    } else if (operation.equals("get")) {
+      // 读取操作
+      HashSet<String> fields = new HashSet<String>(((CoreWorkload)workload).getFieldNames());
+      HashMap<String, ByteIterator> result = new HashMap<String, ByteIterator>();
+      ((DBWrapper)db).read("usertable", key, fields, result);
+    } else {
+      System.out.println("Unsupported " + operation + "!");
+    }
+  }
+  /// Twitter Cache-trace Support
+
   @Override
   public void run() {
     try {
@@ -114,7 +153,34 @@ public class ClientThread implements Runnable {
       sleepUntil(System.nanoTime() + randomMinorDelay);
     }
     try {
-      if (dotransactions) {
+      /// Twitter Cache-trace Support
+      if (workload.getClass().equals(CoreWorkload.class) && ((CoreWorkload)workload).isTwitterWorkload()) {
+        String twittertrace = ((CoreWorkload)workload).getTwitterTraceFile();
+        // read twitter trace file
+        FileInputStream inputstream = new FileInputStream(twittertrace);
+        Scanner sc = new Scanner(inputstream, "UTF-8");
+        Random rand = new Random();
+
+        long startTimeNanos = System.nanoTime();
+        int lineNumber = 0;
+
+        while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
+          if (sc.hasNextLine()) {
+            String line = sc.nextLine();
+            if (lineNumber % threadcount == threadid) {
+              replayTwitterTrace(line, rand);
+              opsdone++;
+            }
+            lineNumber++;
+          }
+
+          throttleNanos(startTimeNanos);
+        }
+
+        sc.close();
+        inputstream.close();
+      ///
+      } else if (dotransactions) {
         long startTimeNanos = System.nanoTime();
 
         while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {

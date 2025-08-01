@@ -198,6 +198,7 @@ LICENSE file.
     <module>rest</module>
     <module>riak</module>
     <module>rocksdb</module>
+    <module>keystatsdb</module>
     <module>s3</module>
     <module>seaweedfs</module>
     <module>scylla</module>
