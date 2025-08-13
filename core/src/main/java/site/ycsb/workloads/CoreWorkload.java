@@ -373,7 +373,7 @@ public class CoreWorkload extends Workload {
   public static final String TWITTER_TRACE_PROPERTY = "tracefile";
   public static final String TWITTER_TRACE_DEFAULT = "";
   protected String twittertracefile = "";
-  protected Vector<String> twittertracevec;
+  protected Vector<String> twittertracevec = new Vector<>();
 
   public boolean isTwitterWorkload() {
     return (twittertracefile != TWITTER_TRACE_DEFAULT);
