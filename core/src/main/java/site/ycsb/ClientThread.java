@@ -23,7 +23,6 @@ import site.ycsb.workloads.CoreWorkload;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.LockSupport;
-import java.io.FileInputStream;
 import java.util.*;
 
 /**
@@ -155,30 +154,21 @@ public class ClientThread implements Runnable {
     try {
       /// Twitter Cache-trace Support
       if (workload.getClass().equals(CoreWorkload.class) && ((CoreWorkload)workload).isTwitterWorkload()) {
-        String twittertrace = ((CoreWorkload)workload).getTwitterTraceFile();
-        // read twitter trace file
-        FileInputStream inputstream = new FileInputStream(twittertrace);
-        Scanner sc = new Scanner(inputstream, "UTF-8");
         Random rand = new Random();
 
         long startTimeNanos = System.nanoTime();
-        int lineNumber = 0;
+        int lineNumber = threadid;
+        int traceNum = ((CoreWorkload)workload).getTwitterTraceNum();
 
-        while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
-          if (sc.hasNextLine()) {
-            String line = sc.nextLine();
-            if (lineNumber % threadcount == threadid) {
-              replayTwitterTrace(line, rand);
-              opsdone++;
-            }
-            lineNumber++;
+        while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested() && lineNumber < traceNum) {
+          String line = ((CoreWorkload)workload).getTwitterTraceLine(lineNumber);
+          if (lineNumber % threadcount == threadid) {
+            replayTwitterTrace(line, rand);
+            opsdone++;
           }
-
+          lineNumber += threadcount;
           throttleNanos(startTimeNanos);
         }
-
-        sc.close();
-        inputstream.close();
       ///
       } else if (dotransactions) {
         long startTimeNanos = System.nanoTime();

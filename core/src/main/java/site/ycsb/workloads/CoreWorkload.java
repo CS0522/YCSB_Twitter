@@ -19,11 +19,11 @@ package site.ycsb.workloads;
 
 import site.ycsb.*;
 import site.ycsb.generator.*;
-import site.ycsb.generator.UniformLongGenerator;
 import site.ycsb.measurements.Measurements;
 
 import java.io.IOException;
 import java.util.*;
+import java.io.FileInputStream;
 
 /**
  * The core benchmark scenario. Represents a set of clients doing simple CRUD operations. The
@@ -372,7 +372,8 @@ public class CoreWorkload extends Workload {
   /// Twitter Cache-trace Support
   public static final String TWITTER_TRACE_PROPERTY = "tracefile";
   public static final String TWITTER_TRACE_DEFAULT = "";
-  protected String twittertracefile;
+  protected String twittertracefile = "";
+  protected Vector<String> twittertracevec;
 
   public boolean isTwitterWorkload() {
     return (twittertracefile != TWITTER_TRACE_DEFAULT);
@@ -380,6 +381,19 @@ public class CoreWorkload extends Workload {
 
   public String getTwitterTraceFile() {
     return twittertracefile;
+  }
+
+  public int getTwitterTraceNum() {
+    return twittertracevec.size();
+  }
+
+  public String getTwitterTraceLine(int lineNumber) {
+    if(lineNumber < twittertracevec.size()) {
+      return twittertracevec.get(lineNumber);
+    } else {
+      System.err.println("Error: getTwitterTrace, lineNumber " + lineNumber + " is out of range.");
+      return null;
+    }
   }
 
   public List<String> getFieldNames() {
@@ -443,6 +457,24 @@ public class CoreWorkload extends Workload {
 
     /// Twitter Cache-trace Support
     twittertracefile = p.getProperty(TWITTER_TRACE_PROPERTY, TWITTER_TRACE_DEFAULT);
+    // 如果是 Twitter workload, 将数据全读取到内存中
+    if (isTwitterWorkload()) {
+      try {
+        FileInputStream inputstream = new FileInputStream(twittertracefile);
+        Scanner sc = new Scanner(inputstream, "UTF-8");
+        while (sc.hasNextLine()) {
+          String line = sc.nextLine();
+          // lineNumber++;
+          twittertracevec.add(line);
+        }
+        sc.close();
+        inputstream.close();
+      } catch (Exception e) {
+        e.printStackTrace();
+        e.printStackTrace(System.out);
+        System.exit(0);
+      }
+    }
     /// Twitter Cache-trace Support
 
     fieldcount =
