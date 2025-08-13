@@ -22,7 +22,10 @@ import site.ycsb.generator.*;
 import site.ycsb.measurements.Measurements;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 
 /**
@@ -372,7 +375,7 @@ public class CoreWorkload extends Workload {
   /// Twitter Cache-trace Support
   public static final String TWITTER_TRACE_PROPERTY = "tracefile";
   public static final String TWITTER_TRACE_DEFAULT = "";
-  protected String twittertracefile = "";
+  protected String twittertracefile;
   protected Vector<String> twittertracevec = new Vector<>();
 
   public boolean isTwitterWorkload() {
@@ -454,21 +457,24 @@ public class CoreWorkload extends Workload {
   @Override
   public void init(Properties p) throws WorkloadException {
     table = p.getProperty(TABLENAME_PROPERTY, TABLENAME_PROPERTY_DEFAULT);
-
     /// Twitter Cache-trace Support
     twittertracefile = p.getProperty(TWITTER_TRACE_PROPERTY, TWITTER_TRACE_DEFAULT);
     // 如果是 Twitter workload, 将数据全读取到内存中
     if (isTwitterWorkload()) {
       try {
-        FileInputStream inputstream = new FileInputStream(twittertracefile);
-        Scanner sc = new Scanner(inputstream, "UTF-8");
-        while (sc.hasNextLine()) {
-          String line = sc.nextLine();
-          // lineNumber++;
+        System.out.println("Loading Twitter Trace......");
+        BufferedReader br = new BufferedReader(new InputStreamReader(
+            new FileInputStream(twittertracefile), StandardCharsets.UTF_8), 16 * 1024 * 1024);
+        String line;
+        int lineNumber = 0;
+        while ((line = br.readLine()) != null) {
+          if (lineNumber % 1000000 == 0) {
+            System.out.println(lineNumber);
+          }
           twittertracevec.add(line);
+          lineNumber++;
         }
-        sc.close();
-        inputstream.close();
+        br.close();
       } catch (Exception e) {
         e.printStackTrace();
         e.printStackTrace(System.out);
@@ -476,9 +482,7 @@ public class CoreWorkload extends Workload {
       }
     }
     /// Twitter Cache-trace Support
-
-    fieldcount =
-        Long.parseLong(p.getProperty(FIELD_COUNT_PROPERTY, FIELD_COUNT_PROPERTY_DEFAULT));
+    fieldcount = Long.parseLong(p.getProperty(FIELD_COUNT_PROPERTY, FIELD_COUNT_PROPERTY_DEFAULT));
     final String fieldnameprefix = p.getProperty(FIELD_NAME_PREFIX, FIELD_NAME_PREFIX_DEFAULT);
     fieldnames = new ArrayList<>();
     for (int i = 0; i < fieldcount; i++) {
