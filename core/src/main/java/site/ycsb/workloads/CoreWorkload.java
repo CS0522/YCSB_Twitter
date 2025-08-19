@@ -459,6 +459,8 @@ public class CoreWorkload extends Workload {
     table = p.getProperty(TABLENAME_PROPERTY, TABLENAME_PROPERTY_DEFAULT);
     /// Twitter Cache-trace Support
     twittertracefile = p.getProperty(TWITTER_TRACE_PROPERTY, TWITTER_TRACE_DEFAULT);
+    long maxLoadCount = Math.max(Long.parseLong(p.getProperty(Client.RECORD_COUNT_PROPERTY)),
+            Long.parseLong(p.getProperty(Client.OPERATION_COUNT_PROPERTY)));
     // 如果是 Twitter workload, 将数据全读取到内存中
     if (isTwitterWorkload()) {
       try {
@@ -468,8 +470,8 @@ public class CoreWorkload extends Workload {
         String line;
         int lineNumber = 0;
         while ((line = br.readLine()) != null) {
-          if (lineNumber % 1000000 == 0) {
-            // System.out.println(lineNumber);
+          if (lineNumber >= maxLoadCount) {
+            break;
           }
           twittertracevec.add(line);
           lineNumber++;
